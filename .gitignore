@@ -27,11 +27,6 @@ wheels/
 .installed.cfg
 *.egg
 
-# Model Weights
-weights/
-*.onnx
-*.pth
-
 # IDE
 .idea/
 .vscode/
