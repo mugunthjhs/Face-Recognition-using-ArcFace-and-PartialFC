@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Recognition Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a237e;     /* Deep Blue */
+            --secondary: #ffffff;    /* White */
+            --accent: #4a148c;      /* Purple */
+        }
+        
+        body {
+            background-color: var(--secondary);
+            color: var(--primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 1rem;
+        }
+        
+        .header h1 {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .preview-area {
+            min-height: 200px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .preview-area img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 4px;
+        }
+        
+        .controls-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .threshold-input {
+            background: white;
+            border: 1px solid #dee2e6;
+            padding: 0.5rem;
+            border-radius: 4px;
+            color: var(--primary);
+        }
+        
+        .action-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .results-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .similarity-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .match-indicator {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .match-indicator.match {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .match-indicator.no-match {
+            background: #f44336;
+            color: white;
+        }
+        
+        .loading-overlay {
+            background: rgba(255,255,255,0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>Face Recognition Analysis</h1>
+            <p>Compare facial features using advanced recognition models</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="upload-section">
+                    <div class="section-title">Reference Image</div>
+                    <input type="file" class="form-control" id="trainImage" accept="image/*" onchange="previewImage(event, 'trainPreview')">
+                    <div id="trainPreview" class="preview-area">
+                        <i class="fas fa-image fa-2x text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="upload-section">
+                    <div class="section-title">Comparison Image</div>
+                    <input type="file" class="form-control" id="validationImage" accept="image/*" onchange="previewImage(event, 'validationPreview')">
+                    <div id="validationPreview" class="preview-area">
+                        <i class="fas fa-image fa-2x text-muted"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="section-title">ArcFace Threshold</label>
+                    <input type="number" id="arcfaceThreshold" class="form-control threshold-input" value="0.5" min="0" max="1" step="0.01">
+                </div>
+                <div class="col-md-6">
+                    <label class="section-title">Partial FC Threshold</label>
+                    <input type="number" id="partialFCThreshold" class="form-control threshold-input" value="0.5" min="0" max="1" step="0.01">
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button class="action-button me-2" onclick="compareFaces('arcface')">
+                    ArcFace Analysis
+                </button>
+                <button class="action-button me-2" onclick="compareFaces('partial_fc')">
+                    Partial FC Analysis
+                </button>
+                <button class="action-button" onclick="compareBothModels()">
+                    Compare Both Models
+                </button>
+            </div>
+        </div>
+
+        <div id="results" class="results-section">
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Processing...</span>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(event, previewId) {
+            const file = event.target.files[0];
+            const preview = document.getElementById(previewId);
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxSize = 800;
+
+                        if (width > height && width > maxSize) {
+                            height = Math.round((height * maxSize) / width);
+                            width = maxSize;
+                        } else if (height > maxSize) {
+                            width = Math.round((width * maxSize) / height);
+                            height = maxSize;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        }
+
+        async function compareFaces(modelType) {
+            try {
+                const trainFile = document.getElementById('trainImage').files[0];
+                const validationFile = document.getElementById('validationImage').files[0];
+                
+                if (!trainFile || !validationFile) {
+                    throw new Error('Please select both training and validation images');
+                }
+
+                const threshold = modelType === 'arcface' 
+                    ? parseFloat(document.getElementById('arcfaceThreshold').value)
+                    : parseFloat(document.getElementById('partialFCThreshold').value);
+
+                document.getElementById('loading').style.display = 'flex';
+                
+                const [trainData, validationData] = await Promise.all([
+                    compressImage(trainFile),
+                    compressImage(validationFile)
+                ]);
+
+                const response = await fetch('http://localhost:2000/api/compare-faces', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image1URL: trainData,
+                        image2URL: validationData,
+                        modelType: modelType,
+                        threshold: threshold
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to compare faces');
+                }
+
+                displayResults(data, modelType);
+            } catch (error) {
+                displayError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayResults(data, modelType) {
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            const modelName = modelType === 'arcface' ? 'ArcFace' : 'Partial FC';
+            
+            resultContent.innerHTML = `
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <img src="${data.face1}" class="img-fluid rounded" alt="Face 1">
+                    </div>
+                    <div class="col-md-2">
+                        <div class="similarity-score">
+                            ${(data.similarity * 100).toFixed(2)}%
+                        </div>
+                        <p class="text-center">${modelName} Similarity</p>
+                        <div class="match-indicator ${data.is_match ? 'match' : 'no-match'}">
+                            ${data.is_match ? 'MATCH' : 'NO MATCH'}
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <img src="${data.face2}" class="img-fluid rounded" alt="Face 2">
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        function displayError(message) {
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> ${message}
+                </div>
+            `;
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        async function compareBothModels() {
+            try {
+                const trainFile = document.getElementById('trainImage').files[0];
+                const validationFile = document.getElementById('validationImage').files[0];
+                
+                if (!trainFile || !validationFile) {
+                    throw new Error('Please select both training and validation images');
+                }
+
+                const arcfaceThreshold = parseFloat(document.getElementById('arcfaceThreshold').value);
+                const partialFCThreshold = parseFloat(document.getElementById('partialFCThreshold').value);
+
+                document.getElementById('loading').style.display = 'flex';
+                
+                const [trainData, validationData] = await Promise.all([
+                    compressImage(trainFile),
+                    compressImage(validationFile)
+                ]);
+
+                // Run both models in parallel
+                const [arcfaceResponse, partialFCResponse] = await Promise.all([
+                    fetch('http://localhost:2000/api/compare-faces', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image1URL: trainData,
+                            image2URL: validationData,
+                            modelType: 'arcface',
+                            threshold: arcfaceThreshold
+                        })
+                    }),
+                    fetch('http://localhost:2000/api/compare-faces', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image1URL: trainData,
+                            image2URL: validationData,
+                            modelType: 'partial_fc',
+                            threshold: partialFCThreshold
+                        })
+                    })
+                ]);
+
+                const arcfaceData = await arcfaceResponse.json();
+                const partialFCData = await partialFCResponse.json();
+
+                if (!arcfaceResponse.ok || !partialFCResponse.ok) {
+                    throw new Error(arcfaceData.error || partialFCData.error || 'Failed to compare faces');
+                }
+
+                displayBothResults(arcfaceData, partialFCData);
+            } catch (error) {
+                displayError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayBothResults(arcfaceData, partialFCData) {
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = `
+                <div class="results-grid">
+                    <div class="model-result">
+                        <div class="model-title">
+                            <i class="fas fa-brain"></i> ArcFace Model Results
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-md-5">
+                                <img src="${arcfaceData.face1}" class="img-fluid rounded" alt="Face 1">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="similarity-score">
+                                    ${(arcfaceData.similarity * 100).toFixed(2)}%
+                                </div>
+                                <div class="match-indicator ${arcfaceData.is_match ? 'match' : 'no-match'}">
+                                    ${arcfaceData.is_match ? 'MATCH' : 'NO MATCH'}
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <img src="${arcfaceData.face2}" class="img-fluid rounded" alt="Face 2">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="model-result">
+                        <div class="model-title">
+                            <i class="fas fa-network-wired"></i> Partial FC Model Results
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-md-5">
+                                <img src="${partialFCData.face1}" class="img-fluid rounded" alt="Face 1">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="similarity-score">
+                                    ${(partialFCData.similarity * 100).toFixed(2)}%
+                                </div>
+                                <div class="match-indicator ${partialFCData.is_match ? 'match' : 'no-match'}">
+                                    ${partialFCData.is_match ? 'MATCH' : 'NO MATCH'}
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <img src="${partialFCData.face2}" class="img-fluid rounded" alt="Face 2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html> 

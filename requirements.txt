@@ -1,0 +1,13 @@
+numpy==1.24.3
+opencv-python==4.8.0.76
+torch==2.0.1
+torchvision==0.15.2
+onnxruntime-gpu==1.15.1
+Pillow==10.0.0
+retinaface==0.0.13
+flask==2.3.3
+flask-cors==4.0.0
+tensorflow-cpu==2.13.0
+requests==2.31.0
+psutil==5.9.5
+memory_profiler==0.61.0 
