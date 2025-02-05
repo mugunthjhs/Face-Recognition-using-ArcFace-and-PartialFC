@@ -4,7 +4,7 @@ torch==2.0.1
 torchvision==0.15.2
 onnxruntime-gpu==1.15.1
 Pillow==10.0.0
-retinaface==0.0.13
+retinaface
 flask==2.3.3
 flask-cors==4.0.0
 tensorflow-cpu==2.13.0
