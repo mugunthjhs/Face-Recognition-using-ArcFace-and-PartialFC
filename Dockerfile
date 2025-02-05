@@ -22,36 +22,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Install Python packages in steps to handle dependencies better
-RUN python -m pip install --upgrade pip==24.3.1 && \
-    pip install --no-cache-dir setuptools==75.8.0 wheel==0.45.1 && \
-    # Install core dependencies first
-    pip install --no-cache-dir \
-        numpy==1.26.1 \
-        scipy==1.15.1 \
-        Pillow==10.2.0 \
-        opencv-python==4.11.0.86 \
-        opencv-python-headless==4.11.0.86 \
-        opencv-contrib-python==4.11.0.86 && \
-    # Install ML frameworks
-    pip install --no-cache-dir \
-        torch==2.5.1 \
-        torchvision==0.20.0 \
-        tensorflow==2.18.0 \
-        onnxruntime==1.20.1 && \
-    # Install face recognition related packages
-    pip install --no-cache-dir \
-        insightface==0.7.3 \
-        retina-face==0.0.17 \
-        deepface==0.0.93 \
-        dlib==19.24.6 \
-        face-alignment==1.4.1 && \
-    # Install web framework and utilities
-    pip install --no-cache-dir \
-        Flask==3.1.0 \
-        Flask-Cors==5.0.0 \
-        gunicorn==23.0.0 \
-        requests==2.32.3 && \
-    # Install remaining packages
+RUN python -m pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Create weights directory
