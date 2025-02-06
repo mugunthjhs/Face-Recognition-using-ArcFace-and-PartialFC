@@ -3,7 +3,7 @@ torch
 torchvision
 opencv-python-headless
 pillow
-tensorflow-cpu
+tensorflow==2.5.0
 onnxruntime
 retinaface
 streamlit
