@@ -72,4 +72,7 @@ sdist/
 var/
 *.egg-info/
 .installed.cfg
-*.egg 
+*.egg
+
+# Weights directory
+weights/
