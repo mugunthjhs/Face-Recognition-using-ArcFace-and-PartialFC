@@ -5,7 +5,7 @@ opencv-python-headless
 pillow
 tensorflow-cpu
 onnxruntime
-retinaface==0.0.17
+retinaface
 streamlit
 gdown
 toml
