@@ -13,6 +13,7 @@ import warnings
 import logging
 import tensorflow as tf
 from torchvision import transforms
+import toml
 
 # Suppress warnings and configure logging
 warnings.filterwarnings('ignore')
@@ -30,6 +31,14 @@ st.set_page_config(
     layout="wide"
 )
 
+# Load secrets from the main directory
+try:
+    with open('secrets.toml', 'r') as f:
+        secrets = toml.load(f)
+except Exception as e:
+    st.error(f"Error loading secrets: {str(e)}")
+    st.stop()
+
 # Function to download weights
 @st.cache_resource
 def download_weights():
@@ -39,9 +48,9 @@ def download_weights():
     
     # Dictionary of model files and their Google Drive IDs from secrets
     model_files = {
-        'arcface.onnx': st.secrets["gcloud"]["arcface_id"],
-        'partialfc.onnx': st.secrets["gcloud"]["partialfc_id"],
-        'RRDB_ESRGAN_x4.pth': st.secrets["gcloud"]["esrgan_id"]
+        'arcface.onnx': secrets["gcloud"]["arcface_id"],
+        'partialfc.onnx': secrets["gcloud"]["partialfc_id"],
+        'RRDB_ESRGAN_x4.pth': secrets["gcloud"]["esrgan_id"]
     }
     
     # Create a placeholder for the download progress

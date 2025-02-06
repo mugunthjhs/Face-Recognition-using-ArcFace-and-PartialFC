@@ -12,3 +12,4 @@ onnxruntime
 retinaface
 streamlit
 gdown
+toml
