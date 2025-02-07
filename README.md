@@ -1,5 +1,8 @@
 # Face Recognition System using ArcFace and PartialFC
 
+![Face Recognition Output](https://github.com/mugunthjhs/Face-Recognition-using-ArcFace-and-PartialFC/blob/main/output2.png)
+![Face Recognition Output](https://github.com/mugunthjhs/Face-Recognition-using-ArcFace-and-PartialFC/blob/main/output1.png)
+
 A robust face recognition system that uses state-of-the-art deep learning models (ArcFace and PartialFC) for accurate face comparison and verification. This project implements models from [InsightFace](https://github.com/deepinsight/insightface), a state-of-the-art 2D and 3D face analysis toolbox.
 
 ## Features
