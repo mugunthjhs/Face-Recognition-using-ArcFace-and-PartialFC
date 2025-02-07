@@ -296,6 +296,11 @@
             const resultsDiv = document.getElementById('results');
             const resultContent = document.getElementById('resultContent');
             const modelName = modelType === 'arcface' ? 'ArcFace' : 'Partial FC';
+            const threshold = modelType === 'arcface' 
+                ? parseFloat(document.getElementById('arcfaceThreshold').value)
+                : parseFloat(document.getElementById('partialFCThreshold').value);
+            
+            const isMatch = data.similarity >= threshold;
             
             resultContent.innerHTML = `
                 <div class="row align-items-center">
@@ -307,8 +312,8 @@
                             ${(data.similarity * 100).toFixed(2)}%
                         </div>
                         <p class="text-center">${modelName} Similarity</p>
-                        <div class="match-indicator ${data.is_match ? 'match' : 'no-match'}">
-                            ${data.is_match ? 'MATCH' : 'NO MATCH'}
+                        <div class="match-indicator ${isMatch ? 'match' : 'no-match'}">
+                            ${isMatch ? 'MATCH' : 'NO MATCH'}
                         </div>
                     </div>
                     <div class="col-md-5">
@@ -395,6 +400,12 @@
             const resultsDiv = document.getElementById('results');
             const resultContent = document.getElementById('resultContent');
             
+            const arcfaceThreshold = parseFloat(document.getElementById('arcfaceThreshold').value);
+            const partialFCThreshold = parseFloat(document.getElementById('partialFCThreshold').value);
+            
+            const arcfaceMatch = arcfaceData.similarity >= arcfaceThreshold;
+            const partialFCMatch = partialFCData.similarity >= partialFCThreshold;
+            
             resultContent.innerHTML = `
                 <div class="results-grid">
                     <div class="model-result">
@@ -409,8 +420,8 @@
                                 <div class="similarity-score">
                                     ${(arcfaceData.similarity * 100).toFixed(2)}%
                                 </div>
-                                <div class="match-indicator ${arcfaceData.is_match ? 'match' : 'no-match'}">
-                                    ${arcfaceData.is_match ? 'MATCH' : 'NO MATCH'}
+                                <div class="match-indicator ${arcfaceMatch ? 'match' : 'no-match'}">
+                                    ${arcfaceMatch ? 'MATCH' : 'NO MATCH'}
                                 </div>
                             </div>
                             <div class="col-md-5">
@@ -431,8 +442,8 @@
                                 <div class="similarity-score">
                                     ${(partialFCData.similarity * 100).toFixed(2)}%
                                 </div>
-                                <div class="match-indicator ${partialFCData.is_match ? 'match' : 'no-match'}">
-                                    ${partialFCData.is_match ? 'MATCH' : 'NO MATCH'}
+                                <div class="match-indicator ${partialFCMatch ? 'match' : 'no-match'}">
+                                    ${partialFCMatch ? 'MATCH' : 'NO MATCH'}
                                 </div>
                             </div>
                             <div class="col-md-5">

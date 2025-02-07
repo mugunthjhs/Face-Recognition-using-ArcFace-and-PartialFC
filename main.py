@@ -55,11 +55,17 @@ CORS(app)  # Enable CORS for all routes
 
 
 align_model_path = 'weights/RRDB_ESRGAN_x4.pth'  # models/RRDB_ESRGAN_x4.pth OR models/RRDB_PSNR_x4.pth
-device = torch.device('cuda')  # if you want to run on CPU, change 'cuda' -> cpu
+# Check if CUDA is available, otherwise use CPU
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 align_model = arch.RRDBNet(3, 3, 64, 23, gc=32)
-align_model.load_state_dict(torch.load(align_model_path), strict=True)
+align_model.load_state_dict(torch.load(align_model_path, map_location=device), strict=True)
 align_model.eval()
 align_model = align_model.to(device)
+
+# Memory Management
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
+    torch.backends.cudnn.benchmark = True
 
 def base64_to_image(base64_string):
     """Convert base64 string to OpenCV image"""
@@ -351,7 +357,8 @@ def compare_faces_api():
         return jsonify({
             'similarity': result['similarity'],
             'face1': face1_b64,
-            'face2': face2_b64
+            'face2': face2_b64,
+            'is_match': result['is_match']
         })
 
     except Exception as e:
